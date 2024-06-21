@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Message List</title>
+    <!-- Add any CSS links or stylesheets here -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .message {
+            background: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .message h3 {
+            margin-top: 0;
+        }
+        .message p {
+            margin-bottom: 5px;
+        }
+        .message a {
+            text-decoration: none;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Message List</h1>
+    <div class="messages">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message">
+                    <h3>From: {{ message.sender.username }}</h3>
+                    <p>{{ message.content }}</p>
+                    <p>Sent at: {{ message.timestamp }}</p>
+                    <p><a href="{% url 'message_detail' message.id %}">View Message</a></p>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No messages yet.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
