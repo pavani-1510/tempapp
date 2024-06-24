@@ -6,28 +6,71 @@
     <title>User List</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom Styles */
+        body {
+            background-color: #f8f9fa;
+            background-image: url('https://static.vecteezy.com/system/resources/previews/002/188/833/original/chat-wallpaper-social-media-message-background-copy-space-for-a-text-vector.jpg'); /* Replace with your actual background image */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: #333; /* Default text color */
+        }
+        .navbar {
+            background-color: #AA96DA; /* Navbar background color */
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #fff; /* Navbar brand text color */
+        }
+        .navbar-nav .nav-link {
+            color: #fff; /* Navbar link text color */
+        }
+        .list-group-item {
+            background-color: #fff;
+            border-color: #dee2e6;
+            cursor: pointer;
+            color: #333; /* List item text color */
+        }
+        .list-group-item:hover {
+            background-color: #f0f0f0; /* List item hover background color */
+        }
+        .container {
+            max-width: 800px;
+            background-color: rgba(255, 255, 255, 0.9); /* Container background color with opacity */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Container box shadow */
+        }
+        .text-center {
+            text-align: center;
+            color: #333; /* Centered text color */
+        }
+    </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">User App</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">{{ user.username }}</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-                    </li>
-                {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                {% endif %}
-            </ul>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">Alpha Convo</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'user_profile' user.id %}">{{ user.username }}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -41,9 +84,6 @@
             {% endfor %}
         </div>
     </div>
-<!-- chat.html or any relevant template -->
-
-<a href="{% url 'delete_all_messages' %}">Delete All Messages</a>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <!-- Bootstrap CSS or any other styling -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://visme.co/blog/wp-content/uploads/2017/07/50-Beautiful-and-Minimalist-Presentation-Backgrounds-036.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            padding-top: 50px;
+            color: #333; /* Text color for better readability */
+        }
+        .avatar {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 4px solid #fff;
+        }
+        .card {
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9); /* Semi-transparent white background for better readability */
+            margin-top: 30px; /* Space between the card and the container */
+        }
+        .card-title {
+            font-size: 2.5rem; /* Increased font size for the title */
+            color: #333;
+            margin-bottom: 0.5rem; /* Space below the title */
+        }
+        .card-text {
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .btn-back {
+            margin-bottom: 20px; /* Space below the Back button */
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="text-center mb-4">
+            <h1>User Profile</h1>
+            <a href="{% url 'user_list' %}" class="btn btn-primary btn-back">Back</a>
+        </div>
+
+        <div class="card">
+            <div class="text-center mt-3">
+                <img src="{% if user_profile.profile_picture %}{{ user_profile.profile_picture.url }}{% else %}https://via.placeholder.com/150{% endif %}"
+                     alt="User Avatar"
+                     class="avatar rounded-circle">
+            </div>
+            <div class="card-body">
+                <h2 class="card-title">{{ user_profile.user.username }}</h2>
+                <p class="card-text"><strong>Name:</strong> {{ user_profile.name }}</p>
+                <p class="card-text"><strong>Mobile:</strong> {{ user_profile.mobile_number }}</p>
+                <p class="card-text"><strong>Profile:</strong> {{ user_profile.profile }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS and any other scripts -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

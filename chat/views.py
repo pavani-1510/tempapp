@@ -10,6 +10,19 @@ from django.utils import timezone
 from django.db.models.functions import TruncDate
 from django.views.decorators.http import require_POST
 
+# views.py
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
+
+def user_profile(request, user_id):
+    profile_user = get_object_or_404(User, id=user_id)
+    user_profile = get_object_or_404(UserProfile, user=profile_user)
+    context = {
+        'user_profile': user_profile
+    }
+    return render(request, 'user_profile.html', context)
+
 
 def home(request):
     if request.user.is_authenticated:
@@ -25,7 +38,7 @@ def login_view(request):
         if user is not None:
             login(request, user)
             return redirect('user_list')
-    return render(request, 'main/login.html')
+    return render(request, 'login.html')
 
 
 def logout_view(request):
