@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{ other_user.username }}</title>
+    <title>Chat with {{ other_user.username }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,10 +12,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #f4f4f9; /* Default background color */
-            background-image: url('{{ background_image_url }}'); /* Dynamic background image URL */
-            background-size: cover;
-            background-position: center;
+            background-color: #f4f4f9;
         }
         .chat-container {
             width: 80%;
@@ -68,10 +65,16 @@
             margin: 5px;
             word-wrap: break-word;
         }
-        .message .timestamp {
+        .timestamp {
             font-size: 12px;
             color: #666;
             margin-left: 10px;
+        }
+        .date-separator {
+            text-align: center;
+            color: #999;
+            margin: 10px 0;
+            font-size: 14px;
         }
         .chat-form {
             padding: 15px;
@@ -84,10 +87,10 @@
             flex-grow: 1;
             border: 1px solid #ddd;
             border-radius: 5px;
-            padding: 20px;
+            padding: 10px;
             resize: none;
             margin-right: 10px;
-            width: 420px;
+            width: calc(100% - 80px); /* Adjusted width to accommodate button */
         }
         .chat-form button {
             background-color: #007bff;
@@ -105,31 +108,24 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>{{ other_user.username }}</h1>
-           
-
+            <h1>Chat with {{ other_user.username }}</h1>
         </div>
         <div class="chat-messages" id="chat-messages">
-            <ul>
-                {% for message in messages|dictsort:"timestamp" %}
-                    {% if message.sender == request.user %}
-                        <li class="message sent">
-                            <div class="message-bubble">
-                                {{ message.content }}
-                            </div>
-                        </li>
-                    {% else %}
-                        <li class="message received">
-                            <div class="message-bubble">
-                                {{ message.content }}
-                            </div>
-                        </li>
-                    {% endif %}
+            <ul id="message-list">
+                {% for message in messages %}
+                    <li class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+                        <div class="message-bubble">
+                            {{ message.content }}
+                            <div class="timestamp">{{ message.timestamp|date:"H:i" }} IST</div>
+                        </div>
+                    </li>
+                {% empty %}
+                    <li>No messages yet.</li>
                 {% endfor %}
             </ul>
         </div>
         <div class="chat-form">
-            <form id="message-form" action="{% url 'chat_with_user' user_id=other_user.id %}" method="post">
+            <form id="message-form" action="{% url 'send_message' user_id=other_user.id %}" method="post">
                 {% csrf_token %}
                 <textarea id="message-input" name="message" rows="3" placeholder="Type your message..."></textarea>
                 <button type="submit">Send</button>
@@ -137,43 +133,100 @@
         </div>
     </div>
 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
-    // Function to scroll chat messages to the bottom
-    function scrollToBottom() {
-        var chatMessages = document.getElementById('chat-messages');
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    // Scroll to bottom initially (when page loads)
-    scrollToBottom();
-
-    // Restore the message from session storage if available
-    var messageInput = document.getElementById('message-input');
-    var storedMessage = sessionStorage.getItem('chatMessage');
-    if (storedMessage) {
-        messageInput.value = storedMessage;
-    }
-
-    // Focus on the message input after reload
-    messageInput.focus();
-
-    // Handle form submission on Enter key press
-    messageInput.addEventListener('keypress', function(event) {
-        if (event.keyCode === 13 && !event.shiftKey) { // Enter key without Shift
-            event.preventDefault(); // Prevent default form submission
-            document.getElementById('message-form').submit(); // Submit the form
-            sessionStorage.removeItem('chatMessage'); // Clear stored message
-            scrollToBottom(); // Scroll to bottom after submission
-        } else {
-            // Store message in session storage as the user types
-            sessionStorage.setItem('chatMessage', messageInput.value);
+        // Function to scroll chat messages to the bottom
+        function scrollToBottom() {
+            var chatMessages = document.getElementById('chat-messages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-    });
 
-    // Automatically reload the page every 5 seconds
-    setInterval(function() {
-        location.reload();
-    }, 5000);
+        // Scroll to bottom initially (when page loads)
+        scrollToBottom();
+
+        // Restore the message from session storage if available
+        var messageInput = document.getElementById('message-input');
+        var storedMessage = sessionStorage.getItem('chatMessage');
+        if (storedMessage) {
+            messageInput.value = storedMessage;
+        }
+
+        // Focus on the message input after reload
+        messageInput.focus();
+
+        // Handle form submission on Enter key press
+        messageInput.addEventListener('keypress', function(event) {
+            if (event.keyCode === 13 && !event.shiftKey) { // Enter key without Shift
+                event.preventDefault(); // Prevent default form submission
+                document.getElementById('message-form').submit(); // Submit the form
+                sessionStorage.removeItem('chatMessage'); // Clear stored message
+                scrollToBottom(); // Scroll to bottom after submission
+            } else {
+                // Store message in session storage as the user types
+                sessionStorage.setItem('chatMessage', messageInput.value);
+            }
+        });
+
+        function fetchMessages() {
+            var url = '{% url "fetch_messages" receiver_id=other_user.id %}';
+            console.log('Fetching messages from:', url); // Debugging message
+
+            $.ajax({
+                url: url,
+                method: 'GET',
+                success: function(data) {
+                    console.log('Received data:', data); // Debugging message
+                    updateMessageList(data); // Call function to update message list
+                    scrollToBottom(); // Scroll to bottom after updating messages
+                },
+                error: function(error) {
+                    console.error('Error fetching messages:', error); // Error message
+                }
+            });
+        }
+
+        function updateMessageList(data) {
+            var messageList = $('#message-list');
+            messageList.empty(); // Clear existing messages
+
+            var lastDate = null;
+
+            data.messages.forEach(function(message) {
+                var messageClass = (message.sender === '{{ request.user.username }}') ? 'sent' : 'received';
+                var messageTime = new Date(message.timestamp + 'Z'); // Assuming the timestamp is in UTC format from the server
+                var formattedTimestamp = messageTime.toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    second: 'numeric',
+                    hour12: true
+                });
+                var messageDate = messageTime.toLocaleDateString('en-IN', {
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric'
+                });
+
+                if (lastDate !== messageDate) {
+                    var dateSeparator = '<div class="date-separator">' + messageDate + '</div>';
+                    messageList.append(dateSeparator);
+                    lastDate = messageDate;
+                }
+
+                var messageItem = '<li class="message ' + messageClass + '">' +
+                                     '<div class="message-bubble">' +
+                                         message.content +
+                                         '<div class="timestamp">' + formattedTimestamp + ' IST</div>' +
+                                     '</div>' +
+                                 '</li>';
+                messageList.append(messageItem);
+            });
+        }
+
+        // Call fetchMessages() initially and set an interval for periodic updates
+        fetchMessages(); // Initial fetch
+
+        setInterval(fetchMessages, 3000);
     </script>
 </body>
 </html>
